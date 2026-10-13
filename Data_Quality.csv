@@ -1,0 +1,8 @@
+Check,RowsAffected,Result,Detail
+Missing collectable or collected amount,0,Pass,Rows where an amount is blank or suppressed [x].
+Published rate differs from recalculated rate by > 0.1 points,0,Pass,"Amounts are rounded to £ thousand, so very small differences are expected."
+Collected amount greater than collectable,0,Pass,A rate above 100% would need checking with the source.
+Duplicate authority/tax/year rows,0,Pass,Each authority should have one row per tax type and year.
+Authorities in fact table,0,Pass,296 billing authorities (source says 296).
+Revised figures flagged [r],4,Review,"Kensington & Chelsea rows: 2025-26 data was added in the 31 July 2026 revision. Not an error, but say so in the report."
+Sum of authorities matches published England total,0,Pass,Checked: summed amounts reproduce the published England and Metropolitan District rates exactly.

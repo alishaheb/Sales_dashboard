@@ -1,0 +1,29 @@
+Benchmark,BenchmarkCode,TaxType,FinancialYear,Collectable_000,Collected_000,PublishedRate_pct,Notes
+England,E-ENG,Council tax,2024-25,42014522,40281988,95.876344,[r]
+London Boroughs,E-LB,Council tax,2024-25,6139837,5820444,94.798021,[r]
+Inner London Boroughs,E-ILB,Council tax,2024-25,2052565,1926173,93.84224,[r]
+Outer London Boroughs,E-OLB,Council tax,2024-25,4087272,3894271,95.277999,
+Metropolitan Districts,E-MD,Council tax,2024-25,7355746,6885514,93.607282,
+Unitary Authorities,E-UA,Council tax,2024-25,12556833,12060534,96.047577,
+Shire Districts,E-SD,Council tax,2024-25,15962106,15515496,97.202061,
+England,E-ENG,Council tax,2025-26,44981384,43002543,95.600755,[r]
+London Boroughs,E-LB,Council tax,2025-26,6587079,6213685,94.331417,[r]
+Inner London Boroughs,E-ILB,Council tax,2025-26,2221320,2066385,93.025093,[r]
+Outer London Boroughs,E-OLB,Council tax,2025-26,4365759,4147300,94.996082,
+Metropolitan Districts,E-MD,Council tax,2025-26,7888750,7362674,93.331313,
+Unitary Authorities,E-UA,Council tax,2025-26,13502597,12929561,95.756105,
+Shire Districts,E-SD,Council tax,2025-26,17002958,16496623,97.022076,
+England,E-ENG,Non-domestic rates,2024-25,27246270,26514974,97.315977,[r]
+London Boroughs,E-LB,Non-domestic rates,2024-25,8643072,8396162,97.143261,[r]
+Inner London Boroughs,E-ILB,Non-domestic rates,2024-25,6282473,6117774,97.378437,[r]
+Outer London Boroughs,E-OLB,Non-domestic rates,2024-25,2360599,2278388,96.517366,
+Metropolitan Districts,E-MD,Non-domestic rates,2024-25,4399413,4243004,96.444775,
+Unitary Authorities,E-UA,Non-domestic rates,2024-25,6582223,6413467,97.436185,
+Shire Districts,E-SD,Non-domestic rates,2024-25,7621562,7462341,97.910913,
+England,E-ENG,Non-domestic rates,2025-26,29019251,28075373,96.747407,[r]
+London Boroughs,E-LB,Non-domestic rates,2025-26,9145963,8828061,96.524127,[r]
+Inner London Boroughs,E-ILB,Non-domestic rates,2025-26,6596812,6376409,96.658946,[r]
+Outer London Boroughs,E-OLB,Non-domestic rates,2025-26,2549151,2451652,96.175236,
+Metropolitan Districts,E-MD,Non-domestic rates,2025-26,4661956,4478081,96.05584,
+Unitary Authorities,E-UA,Non-domestic rates,2025-26,7032697,6809449,96.82557,
+Shire Districts,E-SD,Non-domestic rates,2025-26,8178635,7959782,97.324088,

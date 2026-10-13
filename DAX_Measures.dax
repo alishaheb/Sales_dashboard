@@ -1,0 +1,178 @@
+// =====================================================================
+// DAX measures - Council Tax Collection Benchmarking (Power BI)
+// Model: Fact_Collection[ONSCode]       -> Dim_Authority[ONSCode]   (many-to-one)
+//        Fact_Collection[FinancialYear] -> Dim_Year[FinancialYear]  (many-to-one)
+// Create a new table "_Measures" (Enter data, one blank column) and add
+// each measure below to it. Amounts in the source are in £ thousand.
+// =====================================================================
+
+// ---------- 1. Base measures ----------
+
+Collectable (£k) =
+SUM ( Fact_Collection[Collectable_000] )
+
+Collected (£k) =
+SUM ( Fact_Collection[Collected_000] )
+
+Uncollected (£k) =
+[Collectable (£k)] - [Collected (£k)]
+
+// Format as Percentage, 1 decimal place.
+// Pooled rate: total collected / total collectable. For England and the
+// Metropolitan Districts this reproduces the published MHCLG figures.
+Collection Rate =
+DIVIDE ( [Collected (£k)], [Collectable (£k)] )
+
+
+// ---------- 2. Benchmarks ----------
+
+Rate England =
+CALCULATE ( [Collection Rate], REMOVEFILTERS ( Dim_Authority ) )
+
+Rate West Midlands 7 =
+CALCULATE (
+    [Collection Rate],
+    REMOVEFILTERS ( Dim_Authority ),
+    Dim_Authority[IsWestMidlands7] = TRUE ()
+)
+
+// Same class as the selected council (e.g. Metropolitan District)
+Rate Same Class =
+VAR SelectedClass = SELECTEDVALUE ( Dim_Authority[ClassCode] )
+RETURN
+    IF (
+        NOT ISBLANK ( SelectedClass ),
+        CALCULATE (
+            [Collection Rate],
+            REMOVEFILTERS ( Dim_Authority ),
+            Dim_Authority[ClassCode] = SelectedClass
+        )
+    )
+
+// Gaps in percentage points (format as Decimal number, 1 decimal place)
+Gap vs England (pts) =
+( [Collection Rate] - [Rate England] ) * 100
+
+Gap vs Same Class (pts) =
+( [Collection Rate] - [Rate Same Class] ) * 100
+
+
+// ---------- 3. Year-over-year ----------
+
+Rate Previous Year =
+VAR ThisYear = SELECTEDVALUE ( Dim_Year[YearStart] )
+RETURN
+    CALCULATE (
+        [Collection Rate],
+        REMOVEFILTERS ( Dim_Year ),
+        Dim_Year[YearStart] = ThisYear - 1
+    )
+
+YoY Change (pts) =
+IF (
+    NOT ISBLANK ( [Rate Previous Year] ),
+    ( [Collection Rate] - [Rate Previous Year] ) * 100
+)
+
+
+// ---------- 4. Ranks (1 = highest collection rate) ----------
+
+Rank in England =
+IF (
+    HASONEVALUE ( Dim_Authority[Authority] ),
+    RANKX ( ALL ( Dim_Authority ), [Collection Rate], , DESC, SKIP )
+)
+// ALL ( Dim_Authority ) removes every slicer on the table (e.g. Region),
+// so the rank is always out of all 296 councils.
+
+Rank in West Midlands 7 =
+IF (
+    HASONEVALUE ( Dim_Authority[Authority] )
+        && SELECTEDVALUE ( Dim_Authority[IsWestMidlands7] ) = TRUE (),
+    RANKX (
+        FILTER ( ALL ( Dim_Authority ), Dim_Authority[IsWestMidlands7] = TRUE () ),
+        [Collection Rate], , DESC, SKIP
+    )
+)
+
+Rank Label =
+IF (
+    NOT ISBLANK ( [Rank in England] ),
+    FORMAT ( [Rank in England], "0" ) & " of "
+        & FORMAT ( COUNTROWS ( ALL ( Dim_Authority ) ), "0" )
+)
+
+
+// ---------- 5. RAG status ----------
+// This is MY OWN illustrative rule, not an official council target:
+//   Green = at or above England rate
+//   Amber = up to 2 points below England
+//   Red   = more than 2 points below England
+RAG Status =
+VAR Gap = [Gap vs England (pts)]
+RETURN
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [Collection Rate] ), BLANK (),
+        Gap >= 0, "Green",
+        Gap >= -2, "Amber",
+        "Red"
+    )
+
+// Use in Conditional formatting > Field value
+RAG Colour =
+SWITCH (
+    [RAG Status],
+    "Green", "#2E7D32",
+    "Amber", "#F2A900",
+    "Red", "#C62828"
+)
+
+// Highlight Wolverhampton in bar charts (Conditional formatting > Field value)
+Bar Colour =
+IF (
+    SELECTEDVALUE ( Dim_Authority[IsWolverhampton] ) = TRUE (),
+    "#1D70B8",
+    "#B1B4B6"
+)
+
+
+// ---------- 6. Text for cards and titles ----------
+
+Selected Council =
+SELECTEDVALUE ( Dim_Authority[Authority], "All councils" )
+
+Dynamic Title =
+[Selected Council] & " – "
+    & SELECTEDVALUE ( Fact_Collection[TaxType], "Council tax" )
+    & " in-year collection rate, "
+    & SELECTEDVALUE ( Dim_Year[FinancialYear], "2024-25 to 2025-26" )
+
+Plain English Summary =
+VAR R = [Collection Rate]
+VAR E = [Rate England]
+VAR G = [Gap vs England (pts)]
+RETURN
+    IF (
+        HASONEVALUE ( Dim_Authority[Authority] ) && HASONEVALUE ( Dim_Year[FinancialYear] ),
+        [Selected Council] & " collected " & FORMAT ( R, "0.0%" )
+            & " of " & LOWER ( SELECTEDVALUE ( Fact_Collection[TaxType], "council tax" ) )
+            & " due in the year. This is "
+            & FORMAT ( ABS ( G ), "0.0" ) & " points "
+            & IF ( G >= 0, "above", "below" )
+            & " the England rate (" & FORMAT ( E, "0.0%" ) & "). "
+            & "Amount not collected by 31 March: £"
+            & FORMAT ( [Uncollected (£k)] / 1000, "0.0" ) & " million."
+    )
+
+
+// ---------- 7. Data quality ----------
+
+Rows Flagged Revised =
+CALCULATE ( COUNTROWS ( Fact_Collection ), Fact_Collection[Notes] = "[r]" )
+
+Max Rate Difference (pts) =
+MAXX (
+    Fact_Collection,
+    ABS ( Fact_Collection[RecalcRate_pct] - Fact_Collection[PublishedRate_pct] )
+)
